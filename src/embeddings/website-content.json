@@ -1,0 +1,141 @@
+{
+  "website": "AI Resume Tracker",
+  "training_data": [
+    {
+      "page": "Resume Analyzer",
+      "section": "Resume Input",
+      "description": "User can paste text or upload a resume file for AI analysis",
+      "example_prompts": [
+        {
+          "user_input": "I want to improve my resume for a software engineering job.",
+          "expected_output": "Suggest improvements for work experience, skills, and ATS keywords matching for software engineering roles."
+        },
+        {
+          "user_input": "Can you analyze my uploaded PDF resume?",
+          "expected_output": "Parse the uploaded PDF, extract key sections (contact info, experience, education, skills) and give improvement suggestions."
+        },
+        {
+          "user_input": "How many characters are in my pasted resume?",
+          "expected_output": "Count the total characters in the pasted resume text."
+        }
+      ]
+    },
+    {
+      "page": "Resume Analyzer",
+      "section": "AI Result Overview",
+      "description": "Displays AI analysis including overall score, ATS compatibility, keywords matched, format quality, and impact score",
+      "example_prompts": [
+        {
+          "user_input": "Show me my resume score and suggestions.",
+          "expected_output": "Display overall score, ATS compatibility percentage, matched keywords count, format quality, impact score, and improvement suggestions."
+        },
+        {
+          "user_input": "Highlight strengths in my resume.",
+          "expected_output": "List key strengths like technical skills, work achievements, certifications, and relevant experience."
+        },
+        {
+          "user_input": "What keywords should I include to improve ATS score?",
+          "expected_output": "Suggest industry-specific and role-specific keywords that are missing from the resume."
+        }
+      ]
+    },
+    {
+      "page": "Resume Analyzer",
+      "section": "AI Suggestions / Improvements",
+      "description": "Gives specific actionable suggestions to improve the resume",
+      "example_prompts": [
+        {
+          "user_input": "What can I improve in my resume for a senior developer role?",
+          "expected_output": "Advise on expanding technical skills, adding quantified achievements, improving formatting, and including relevant keywords for senior developer roles."
+        },
+        {
+          "user_input": "Correct grammar and formatting in my resume.",
+          "expected_output": "Provide a corrected version of the resume text with proper grammar, punctuation, formatting, and consistent styling."
+        }
+      ]
+    },
+    {
+      "page": "Resume Analyzer",
+      "section": "Sample Resumes",
+      "description": "Provides sample resumes for different job roles",
+      "example_prompts": [
+        {
+          "user_input": "Show me a sample software engineer resume.",
+          "expected_output": "Display a complete example resume suitable for a software engineer including contact info, experience, skills, and education."
+        },
+        {
+          "user_input": "I want to see a marketing manager sample resume.",
+          "expected_output": "Display a sample resume for marketing manager roles with proper format, skills, and experience sections."
+        }
+      ]
+    },
+    {
+      "page": "Job Tracker",
+      "section": "Add Job Form",
+      "description": "User can add a new job application with details like company, position, date, status, description, and notes",
+      "example_prompts": [
+        {
+          "user_input": "Add a new job application for Google as a Software Engineer.",
+          "expected_output": "Create a new job entry: company='Google', position='Software Engineer', status='Applied', and optional fields like applicationDate, jobDescription, and notes if provided."
+        },
+        {
+          "user_input": "I applied for a Marketing Manager position at HubSpot.",
+          "expected_output": "Create a job entry for company='HubSpot', position='Marketing Manager', status='Applied', with optional description and notes."
+        }
+      ]
+    },
+    {
+      "page": "Job Tracker",
+      "section": "Job List & Filters",
+      "description": "Displays user's saved job applications and allows filtering and sorting",
+      "example_prompts": [
+        {
+          "user_input": "Show me all my job applications.",
+          "expected_output": "List all jobs with company, position, application date, and status."
+        },
+        {
+          "user_input": "Filter jobs that are in Interviewing status.",
+          "expected_output": "Display only jobs where status='Interviewing'."
+        },
+        {
+          "user_input": "Sort my jobs by oldest first.",
+          "expected_output": "Sort all job entries by applicationDate ascending."
+        },
+        {
+          "user_input": "Show me jobs at Google only.",
+          "expected_output": "Filter jobs where company='Google'."
+        }
+      ]
+    },
+    {
+      "page": "Job Tracker",
+      "section": "Job Stats",
+      "description": "Displays summary statistics like total applications, interviewing, offers, rejected, and success rate",
+      "example_prompts": [
+        {
+          "user_input": "How many applications have I submitted?",
+          "expected_output": "Return the total number of job applications submitted."
+        },
+        {
+          "user_input": "How many interviews do I have scheduled?",
+          "expected_output": "Return the number of job applications with status='Interviewing'."
+        },
+        {
+          "user_input": "What is my success rate?",
+          "expected_output": "Calculate the percentage of jobs with status='Offered' out of total applications."
+        }
+      ]
+    },
+    {
+      "page": "Job Tracker",
+      "section": "Export CSV",
+      "description": "Allows user to export their job application data as CSV",
+      "example_prompts": [
+        {
+          "user_input": "Export all my job applications as CSV.",
+          "expected_output": "Generate a CSV file with headers (Company, Position, Status, Application Date, Description, Notes) and include all job entries."
+        }
+      ]
+    }
+  ]
+}
