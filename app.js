@@ -14,6 +14,8 @@ import generateToken from "./src/utils/generateToken.js";
 import profileRoutes from "./src/routes/profile.routes.js";
 import manageUsersRoutes from "./src/routes/manage-users.routes.js";
 import superAdminDashboardRoutes from "./src/routes/superadmin-dashboard.routes.js";
+import careerRoutes from "./src/routes/career.routes.js";
+import reportRoutes from "./src/routes/report.routes.js";
 import path from "path";
 
 const app = express();
@@ -21,7 +23,7 @@ const app = express();
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.use(cors({
-  origin: ["http://127.0.0.1:5500", "http://localhost:5500"],
+  origin: ["http://127.0.0.1:5500", "http://localhost:5500", "http://127.0.0.1:3000", "http://localhost:3000"],
   methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
   allowedHeaders: ["Content-Type","Authorization"],
   credentials: true
@@ -82,6 +84,8 @@ app.use("/api/jobs", jobRoutes);
 app.use('/api/profile', profileRoutes); 
 app.use("/api/manage-users", manageUsersRoutes);
 app.use("/api/superadmin-dashboard", superAdminDashboardRoutes);
+app.use("/api/career", careerRoutes);
+app.use("/api/reports", reportRoutes);
 
 app.get("/", (req, res) => {
     res.send("API is running");

@@ -35,6 +35,11 @@ export const authUser = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (user && (await user.matchPassword(password))) {
+        // Update status to active
+        user.status = true;
+        user.lastActive = Date.now();
+        await user.save();
+
         res.json({
             _id: user._id,
             name: user.name,
@@ -46,3 +51,19 @@ export const authUser = async (req, res) => {
         res.status(400).json({ message: "Invalid email or password" })
     }
 };
+
+export const logoutUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.body.userId);
+        if (user) {
+            user.status = false;
+            user.lastActive = Date.now();
+            await user.save();
+            res.json({ message: "Logged out successfully" });
+        } else {
+            res.status(404).json({ message: "User not found" });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

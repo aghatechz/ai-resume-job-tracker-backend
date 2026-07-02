@@ -1,5 +1,5 @@
 import Resume from "../models/Resume.js";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -13,15 +13,16 @@ export const analyzeResume = async (req, res) => {
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
+    const ai = new GoogleGenerativeAI(process.env.GEMINI_KEY);
 
-  const prompt = `
+const prompt = `
 You are an AI resume expert.
 Analyze this resume and return ONLY valid JSON with the following fields:
 {
   "name": "string",
   "email": "string",
   "phone": "string",
+  "summary": "string",
   "experience": "string",
   "education": "string",
   "skills": "string",
@@ -36,12 +37,13 @@ ${resumeText}
 `;
 
 
-    const result = await ai.models.generateContent({
-      model: "gemini-2.5-flash", 
-      contents: [{ text: prompt }],
-    });
 
-    const aiText = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    const modelName = process.env.GEMINI_MODEL || "gemini-3.5-flash";
+    const model = ai.getGenerativeModel({ model: modelName });
+    const result = await model.generateContent(prompt);
+    
+    // Better way to get response text
+    const aiText = result.response.text().trim();
     if (!aiText) {
       return res.status(500).json({ message: "AI response empty" });
     }
@@ -66,6 +68,7 @@ ${resumeText}
 
     aiResult.score = aiResult.score || 0;
     aiResult.atsScore = aiResult.atsScore || 0;
+    aiResult.summary = aiResult.summary || "";
     aiResult.correctedText = aiResult.correctedText || resumeText;
     aiResult.suggestions = aiResult.suggestions || [];
 
@@ -73,6 +76,7 @@ ${resumeText}
       userId,
       originalText: resumeText,
       aiImprovedText: aiResult.correctedText,
+      aiSummary: aiResult.summary,
       aiScore: aiResult.score,
       atsScore: aiResult.atsScore,
       suggestions: aiResult.suggestions,

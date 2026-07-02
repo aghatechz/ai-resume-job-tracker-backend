@@ -2,16 +2,19 @@ import mongoose, { Types } from "mongoose";
 
 const resumeSchema = new mongoose.Schema(
     {
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: "User",
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            ref: "User",
         },
         originalText: {
             type: String,
             required: true,
-        }, 
+        },
         aiImprovedText: {
+            type: String,
+        },
+        aiSummary: {
             type: String,
         },
         aiScore: {
@@ -26,7 +29,7 @@ const resumeSchema = new mongoose.Schema(
             },
         ],
     },
-    {timestamps: true}
+    { timestamps: true }
 );
 
 const Resume = mongoose.model("Resume", resumeSchema);

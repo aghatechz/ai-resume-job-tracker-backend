@@ -1,0 +1,94 @@
+import { GoogleGenAI } from "@google/genai";
+import dotenv from "dotenv";
+import CareerResume from "../models/careerResume.js";
+import fs from "fs";
+import path from "path";
+import * as pdfParse from "pdf-parse";
+import mammoth from "mammoth";
+
+dotenv.config();
+
+export const polishCareerResume = async (req, res) => {
+  const userId = req.user._id;
+
+  let resumeText = req.body.resumeText || "";
+  const jobDescription = req.body.jobDescription || "";
+
+  // File extraction
+  if (req.file) {
+    const ext = path.extname(req.file.originalname).toLowerCase();
+    try {
+      if (ext === ".pdf") {
+        const buffer = fs.readFileSync(req.file.path);
+        const data = await pdfParse(buffer);
+        resumeText = data.text || resumeText;
+      } else if (ext === ".docx") {
+        const buffer = fs.readFileSync(req.file.path);
+        const { value } = await mammoth.extractRawText({ buffer });
+        resumeText = value || resumeText;
+      } else if (ext === ".txt") {
+        const buffer = fs.readFileSync(req.file.path);
+        resumeText = buffer.toString() || resumeText;
+      }
+      fs.unlinkSync(req.file.path); // delete file after reading
+    } catch (err) {
+      return res.status(500).json({ message: "File reading failed", error: err.message });
+    }
+  }
+
+  if (!resumeText || !jobDescription) {
+    return res.status(400).json({ message: "Resume text or Job Description missing" });
+  }
+
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
+
+    const prompt = `
+You are an expert career resume coach.
+Optimize the resume ONLY for the given job description.
+Return ONLY valid JSON in this format:
+
+{
+  "score": number,
+  "atsScore": number,
+  "suggestions": [string],
+  "correctedText": "string"
+}
+
+Resume:
+${resumeText}
+
+Job Description:
+${jobDescription}
+`;
+
+    const result = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ text: prompt }]
+    });
+
+    const aiText = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if (!aiText) return res.status(500).json({ message: "Empty AI response" });
+
+    const cleanedText = aiText.replace(/^```json\s*/i, "").replace(/```$/i, "").trim();
+
+    let aiResult;
+    try { aiResult = JSON.parse(cleanedText); }
+    catch(err){ return res.status(500).json({ message:"Invalid AI JSON", raw: aiText }); }
+
+    // Save to DB
+    const savedResume = await CareerResume.create({
+      userId,
+      originalResume: resumeText,
+      jobDescription,
+      aiCorrectedResume: aiResult.correctedText || resumeText,
+      score: aiResult.score || 0,
+      atsScore: aiResult.atsScore || 0,
+      suggestions: aiResult.suggestions || []
+    });
+
+    res.status(201).json({ message: "Resume polished", aiResult, savedResume });
+  } catch (error) {
+    res.status(500).json({ message: "Career resume polishing failed", error: error.message });
+  }
+};
