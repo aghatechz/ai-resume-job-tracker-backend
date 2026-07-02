@@ -180,3 +180,105 @@ const user = await User.findById(userId);
     res.status(500).json({ msg: 'Server error', error: err.message });
   }
 };
+
+export const getSettings = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    // Default settings if empty
+    if (!user.settings) {
+      user.settings = {
+        defaultTargetRole: "Software Engineer",
+        aiModel: "gemini-2.5-flash",
+        aiTemperature: 0.2,
+        atsScoreGoal: 85,
+        emailNotifications: true,
+        deadlineAlerts: true
+      };
+      await user.save();
+    }
+
+    res.json({
+      success: true,
+      settings: user.settings,
+      socials: {
+        github: user.github || "",
+        linkedin: user.linkedin || "",
+        website: user.website || "",
+      }
+    });
+  } catch (err) {
+    console.error("Get Settings Error:", err);
+    res.status(500).json({ msg: "Server error", error: err.message });
+  }
+};
+
+export const updateSettings = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    const {
+      settings,
+      socials,
+      currentPassword,
+      newPassword
+    } = req.body;
+
+    // 1. Update settings fields
+    if (settings) {
+      user.settings = {
+        ...user.settings,
+        ...settings
+      };
+    }
+
+    // 2. Update socials
+    if (socials) {
+      user.github = socials.github !== undefined ? socials.github : user.github;
+      user.linkedin = socials.linkedin !== undefined ? socials.linkedin : user.linkedin;
+      user.website = socials.website !== undefined ? socials.website : user.website;
+    }
+
+    // 3. Update password
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ msg: "Current password is required to change password" });
+      }
+
+      if (user.password) {
+        const isMatch = await user.matchPassword(currentPassword);
+        if (!isMatch) {
+          return res.status(400).json({ msg: "Invalid current password" });
+        }
+      }
+
+      user.password = newPassword;
+    }
+
+    await user.save();
+
+    res.json({
+      success: true,
+      msg: "Settings updated successfully",
+      settings: user.settings,
+      socials: {
+        github: user.github,
+        linkedin: user.linkedin,
+        website: user.website
+      }
+    });
+  } catch (err) {
+    console.error("Update Settings Error:", err);
+    res.status(500).json({ msg: "Server error", error: err.message });
+  }
+};

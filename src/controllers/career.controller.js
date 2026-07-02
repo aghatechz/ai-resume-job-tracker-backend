@@ -4,9 +4,7 @@ import dotenv from "dotenv";
 import CareerResume from "../models/careerResume.js";
 import fs from "fs";
 import path from "path";
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const pdfParse = require("pdf-parse");
+import { PDFParse } from "pdf-parse";
 import mammoth from "mammoth";      // DOCX reading
 
 dotenv.config();
@@ -30,8 +28,13 @@ export const polishCareerResume = async (req, res) => {
       const fileBuffer = fs.readFileSync(req.file.path);
 
       if (ext === ".pdf") {
-        const data = await pdfParse(fileBuffer); 
-        resumeText = data.text || resumeText;
+        const parser = new PDFParse({ data: fileBuffer });
+        try {
+          const data = await parser.getText();
+          resumeText = data.text || resumeText;
+        } finally {
+          await parser.destroy().catch(() => {});
+        }
       } else if (ext === ".docx") {
         const { value } = await mammoth.extractRawText({ buffer: fileBuffer });
         resumeText = value || resumeText;

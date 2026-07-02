@@ -2,7 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import { protect } from '../middleware/auth.middleware.js';
-import { getProfile, updateProfile, uploadImage } from '../controllers/profile.controller.js';
+import { getProfile, updateProfile, uploadImage, getSettings, updateSettings } from '../controllers/profile.controller.js';
 import fs from "fs";
 
 const router = express.Router();
@@ -37,6 +37,8 @@ const upload = multer({
 });
 
 router.get('/me',protect, getProfile);
+router.get('/settings', protect, getSettings);
+router.put('/settings', protect, updateSettings);
 router.patch('/:userId', protect, updateProfile);
 router.post('/:userId/upload', protect, upload.single('image'), uploadImage);
 

@@ -92,6 +92,32 @@ const userSchema = new mongoose.Schema(
             type: Number,
             default: 0
         },
+        settings: {
+            defaultTargetRole: {
+                type: String,
+                default: "Software Engineer"
+            },
+            aiModel: {
+                type: String,
+                default: "gemini-2.5-flash"
+            },
+            aiTemperature: {
+                type: Number,
+                default: 0.2
+            },
+            atsScoreGoal: {
+                type: Number,
+                default: 85
+            },
+            emailNotifications: {
+                type: Boolean,
+                default: true
+            },
+            deadlineAlerts: {
+                type: Boolean,
+                default: true
+            }
+        }
     },
     { timestamps: true }
 );
