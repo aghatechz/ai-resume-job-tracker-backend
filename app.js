@@ -23,7 +23,7 @@ const app = express();
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.use(cors({
-  origin: ["http://127.0.0.1:5500", "http://localhost:5500", "http://127.0.0.1:3000", "http://localhost:3000"],
+  origin: ["http://127.0.0.1:5500", "http://localhost:5500", "http://127.0.0.1:3000", "http://localhost:3000", process.env.FRONTEND_URL].filter(Boolean),
   methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
   allowedHeaders: ["Content-Type","Authorization"],
   credentials: true
@@ -88,7 +88,15 @@ app.use("/api/career", careerRoutes);
 app.use("/api/reports", reportRoutes);
 
 app.get("/", (req, res) => {
-    res.send("API is running");
+    res.json({ 
+      status: "API is running successfully",
+      version: "1.0.0",
+      environment: process.env.NODE_ENV || "development"
+    });
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "UP" });
 });
 
 app.post("/api/ai", async (req, res) => {
