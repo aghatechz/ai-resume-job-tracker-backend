@@ -20,8 +20,6 @@
     "multer": "^2.0.2",
     "nodemailer": "^7.0.11",
     "nodemon": "^3.1.11",
-    "pdf-parse": "^2.4.5",
-    "pdfjs-dist": "^5.4.449",
     "puppeteer": "^24.33.0"
   }
 }

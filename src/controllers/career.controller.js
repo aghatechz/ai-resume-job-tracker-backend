@@ -26,16 +26,13 @@ export const polishCareerResume = async (req, res) => {
       const fileBuffer = fs.readFileSync(req.file.path);
 
       if (ext === ".pdf") {
-        // Lazy import so the ~125MB pdf-parse/pdfjs-dist libs are not pulled
-        // into the serverless cold start (they load only when a PDF arrives).
-        const { PDFParse } = await import("pdf-parse");
-        const parser = new PDFParse({ data: fileBuffer });
-        try {
-          const data = await parser.getText();
-          resumeText = data.text || resumeText;
-        } finally {
-          await parser.destroy().catch(() => {});
-        }
+        // pdf-parse/pdfjs-dist are too heavy for the serverless runtime and are
+        // not installed in the deployed build. Ask the user for DOCX/TXT or text.
+        fs.unlinkSync(req.file.path);
+        return res.status(415).json({
+          message:
+            "PDF uploads aren't supported here. Please upload a .docx or .txt file, or paste your resume text.",
+        });
       } else if (ext === ".docx") {
         const { default: mammoth } = await import("mammoth");
         const { value } = await mammoth.extractRawText({ buffer: fileBuffer });
