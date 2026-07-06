@@ -1,9 +1,12 @@
 import fs from "fs";
 import path from "path";
-import puppeteer from "puppeteer";
 
 export const generateResumePDF = async (req, res) => {
     try {
+        // Loaded lazily so the heavy puppeteer/Chromium dependency is not
+        // pulled into the serverless cold start (keeps the function small).
+        const { default: puppeteer } = await import("puppeteer");
+
         const { templateName, data } = req.body;
 
         if(!templateName) {

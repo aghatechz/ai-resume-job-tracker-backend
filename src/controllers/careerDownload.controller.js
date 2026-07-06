@@ -1,9 +1,11 @@
 import fs from "fs";
 import path from "path";
-import puppeteer from "puppeteer";
 
 export const downloadCareerResumePDF = async (req, res) => {
   try {
+    // Lazy import: keeps puppeteer/Chromium out of the serverless cold start.
+    const { default: puppeteer } = await import("puppeteer");
+
     const { templateName, data } = req.body;
 
     if (!templateName) return res.status(400).json({ message: "Template name missing" });

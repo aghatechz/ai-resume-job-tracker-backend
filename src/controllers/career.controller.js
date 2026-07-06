@@ -4,8 +4,6 @@ import dotenv from "dotenv";
 import CareerResume from "../models/careerResume.js";
 import fs from "fs";
 import path from "path";
-import { PDFParse } from "pdf-parse";
-import mammoth from "mammoth";      // DOCX reading
 
 dotenv.config();
 
@@ -28,6 +26,9 @@ export const polishCareerResume = async (req, res) => {
       const fileBuffer = fs.readFileSync(req.file.path);
 
       if (ext === ".pdf") {
+        // Lazy import so the ~125MB pdf-parse/pdfjs-dist libs are not pulled
+        // into the serverless cold start (they load only when a PDF arrives).
+        const { PDFParse } = await import("pdf-parse");
         const parser = new PDFParse({ data: fileBuffer });
         try {
           const data = await parser.getText();
@@ -36,6 +37,7 @@ export const polishCareerResume = async (req, res) => {
           await parser.destroy().catch(() => {});
         }
       } else if (ext === ".docx") {
+        const { default: mammoth } = await import("mammoth");
         const { value } = await mammoth.extractRawText({ buffer: fileBuffer });
         resumeText = value || resumeText;
       } else if (ext === ".txt") {
