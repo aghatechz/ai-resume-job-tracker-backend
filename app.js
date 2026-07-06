@@ -1,6 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+import connectDB from "./src/config/db.js";
+
 import express from "express";
 import cors from "cors"
 import authRoutes from "./src/routes/auth.routes.js";
@@ -17,6 +19,7 @@ import superAdminDashboardRoutes from "./src/routes/superadmin-dashboard.routes.
 import careerRoutes from "./src/routes/career.routes.js";
 import reportRoutes from "./src/routes/report.routes.js";
 import path from "path";
+import mongoose from "mongoose";
 
 const app = express();
 
@@ -33,6 +36,42 @@ app.use(cors({
 
 
 app.use(express.json());
+
+// ---- Health checks (must work even if the DB is down) ----
+app.get("/", (req, res) => {
+  res.json({
+    status: "API is running successfully",
+    version: "1.0.0",
+    environment: process.env.NODE_ENV || "development",
+  });
+});
+
+app.get("/health", (req, res) => {
+  // mongoose.connection.readyState: 1 = connected, 2 = connecting
+  const states = ["disconnected", "connected", "connecting", "disconnecting"];
+  const dbState = states[mongoose.connection.readyState] || "unknown";
+  res.status(200).json({
+    status: "UP",
+    db: dbState,
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// ---- Ensure the DB is connected before handling API requests ----
+// On serverless the connection is cached, so this is cheap after the first hit.
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error("DB connection failed for request:", error.message);
+    res.status(503).json({
+      message: "Database unavailable. Please try again shortly.",
+      error: error.message,
+    });
+  }
+});
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -86,18 +125,6 @@ app.use("/api/manage-users", manageUsersRoutes);
 app.use("/api/superadmin-dashboard", superAdminDashboardRoutes);
 app.use("/api/career", careerRoutes);
 app.use("/api/reports", reportRoutes);
-
-app.get("/", (req, res) => {
-    res.json({ 
-      status: "API is running successfully",
-      version: "1.0.0",
-      environment: process.env.NODE_ENV || "development"
-    });
-});
-
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "UP" });
-});
 
 app.post("/api/ai", async (req, res) => {
   const { prompt } = req.body;
