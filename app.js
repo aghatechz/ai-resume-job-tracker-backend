@@ -25,8 +25,26 @@ const app = express();
 
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
+const allowedOrigins = [
+  "http://127.0.0.1:5500",
+  "http://localhost:5500",
+  "http://127.0.0.1:3000",
+  "http://localhost:3000",
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
 app.use(cors({
-  origin: ["http://127.0.0.1:5500", "http://localhost:5500", "http://127.0.0.1:3000", "http://localhost:3000", process.env.FRONTEND_URL].filter(Boolean),
+  origin: (origin, cb) => {
+    // Allow non-browser requests (curl/Postman, no Origin header).
+    if (!origin) return cb(null, true);
+    let host = "";
+    try { host = new URL(origin).hostname; } catch { /* invalid origin */ }
+    // Allow configured/localhost origins and any Vercel deployment (prod + previews).
+    if (allowedOrigins.includes(origin) || host.endsWith(".vercel.app")) {
+      return cb(null, true);
+    }
+    return cb(new Error(`Origin not allowed by CORS: ${origin}`));
+  },
   methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
   allowedHeaders: ["Content-Type","Authorization"],
   credentials: true
