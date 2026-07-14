@@ -7,16 +7,23 @@ import fs from "fs";
 
 const router = express.Router();
 
-['uploads/avatars', 'uploads/covers'].forEach(folder => {
-  if (!fs.existsSync(folder)) fs.mkdirSync(folder, { recursive: true });
+// On Vercel the project filesystem is read-only; only /tmp is writable.
+// Creating folders under the project root at import time crashes the whole
+// serverless function, so pick a writable base and never let mkdir throw.
+const UPLOAD_BASE = process.env.VERCEL ? '/tmp/uploads' : 'uploads';
+
+[`${UPLOAD_BASE}/avatars`, `${UPLOAD_BASE}/covers`].forEach(folder => {
+  try {
+    if (!fs.existsSync(folder)) fs.mkdirSync(folder, { recursive: true });
+  } catch (err) {
+    console.warn('Could not create upload folder (read-only fs?):', folder, err.message);
+  }
 });
 
-
- 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const type = req.body.type || req.query.type;
-    const uploadPath = type === 'avatar' ? 'uploads/avatars' : 'uploads/covers';
+    const uploadPath = type === 'avatar' ? `${UPLOAD_BASE}/avatars` : `${UPLOAD_BASE}/covers`;
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {

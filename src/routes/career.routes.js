@@ -5,7 +5,8 @@ import { downloadCareerResumePDF } from "../controllers/careerDownload.controlle
 import multer from "multer";
 
 const router = express.Router();
-const upload = multer({ dest: "uploads/" });
+// Only /tmp is writable on Vercel serverless; use it there, "uploads/" locally.
+const upload = multer({ dest: process.env.VERCEL ? "/tmp/uploads/" : "uploads/" });
 
 router.post("/polish", protect, upload.single("resumeFile"), polishCareerResume);
 router.post("/download-pdf", protect, downloadCareerResumePDF);
