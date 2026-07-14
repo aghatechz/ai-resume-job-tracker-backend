@@ -42,12 +42,17 @@ export const polishCareerResume = async (req, res) => {
       } else if (ext === ".txt") {
         resumeText = fileBuffer.toString() || resumeText;
       }
-
-      // Optional: delete uploaded file after reading
-      fs.unlinkSync(req.file.path);
     } catch (err) {
-      console.error("File reading error:", err.message);
-      return res.status(500).json({ message: "Failed to read uploaded file", error: err.message });
+      // If server-side parsing fails (can happen on serverless), fall back to
+      // the resumeText the client already extracted and sent along with the file.
+      console.error("File parse failed, using client-provided text:", err.message);
+      if (!resumeText) {
+        return res.status(400).json({
+          message: "Could not read the uploaded file. Please paste your resume text instead.",
+        });
+      }
+    } finally {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
     }
   }
 

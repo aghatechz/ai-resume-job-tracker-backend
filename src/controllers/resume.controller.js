@@ -26,11 +26,18 @@ Analyze this resume and return ONLY valid JSON with the following fields:
   "experience": "string",
   "education": "string",
   "skills": "string",
-  "score": number,
-  "atsScore": number,
-  "suggestions": [string],
-  "correctedText": "string"
+  "score": number,            // overall resume quality score 0-100
+  "atsScore": number,         // ATS compatibility percentage 0-100
+  "keywordsMatched": number,  // count of important/industry keywords found in the resume
+  "formatQuality": number,    // formatting/structure quality score 0-100
+  "impactScore": number,      // impact of achievements/action verbs score 0-100
+  "strengths": [string],      // 3-6 concrete strengths of this resume
+  "suggestions": [string],    // 3-6 actionable improvements
+  "keywords": [string],       // important keywords/skills detected in the resume
+  "correctedText": "string"   // improved full resume text
 }
+
+Return ONLY valid JSON, no markdown, no extra text.
 
 Resume:
 ${resumeText}
@@ -68,6 +75,11 @@ ${resumeText}
 
     aiResult.score = aiResult.score || 0;
     aiResult.atsScore = aiResult.atsScore || 0;
+    aiResult.keywordsMatched = aiResult.keywordsMatched ?? 0;
+    aiResult.formatQuality = aiResult.formatQuality ?? 0;
+    aiResult.impactScore = aiResult.impactScore ?? 0;
+    aiResult.strengths = aiResult.strengths || [];
+    aiResult.keywords = aiResult.keywords || [];
     aiResult.summary = aiResult.summary || "";
     aiResult.correctedText = aiResult.correctedText || resumeText;
     aiResult.suggestions = aiResult.suggestions || [];
