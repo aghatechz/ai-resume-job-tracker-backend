@@ -45,9 +45,25 @@ ${resumeText}
 
 
 
-    const modelName = process.env.GEMINI_MODEL || "gemini-3.5-flash";
+    const modelName = process.env.GEMINI_MODEL || "gemini-flash-lite-latest";
     const model = ai.getGenerativeModel({ model: modelName });
-    const result = await model.generateContent(prompt);
+
+    // Retry logic for rate limits (429)
+    let result;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        result = await model.generateContent(prompt);
+        break;
+      } catch (err) {
+        if (err.status === 429 && attempt < 2) {
+          const delay = Math.pow(2, attempt) * 2000;
+          console.log("Rate limited, retrying in " + delay + "ms...");
+          await new Promise(r => setTimeout(r, delay));
+        } else {
+          throw err;
+        }
+      }
+    }
     
     // Better way to get response text
     const aiText = result.response.text().trim();

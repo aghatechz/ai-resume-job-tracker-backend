@@ -1,45 +1,54 @@
 import mongoose from "mongoose";
+import { MongoMemoryServer } from "mongodb-memory-server";
 
-/**
- * Serverless-safe Mongo connection.
- * Vercel re-imports the module on every cold start, so we cache the
- * connection (and the in-flight promise) on the global object to avoid
- * opening a new connection on every invocation.
- */
 let cached = global._mongoose;
 if (!cached) {
     cached = global._mongoose = { conn: null, promise: null };
 }
 
+let mongod = null;
+
+/** Cleanup in-memory MongoDB on exit */
+process.on("SIGINT", async () => {
+    if (mongod) await mongod.stop();
+    process.exit();
+});
+
 const connectDB = async () => {
     if (cached.conn) return cached.conn;
 
-    if (!process.env.MONGO_URI) {
-        // Do NOT process.exit() on serverless — it crashes the whole function.
-        throw new Error("MONGO_URI environment variable is not set");
-    }
+    const uri = process.env.MONGO_URI;
 
-    if (!cached.promise) {
-        cached.promise = mongoose
-            .connect(process.env.MONGO_URI, {
-                serverSelectionTimeoutMS: 10000,
-            })
-            .then((m) => {
-                console.log("MongoDB Connected:", m.connection.host);
-                return m;
+    // Try Atlas first
+    if (uri) {
+        try {
+            cached.conn = await mongoose.connect(uri, {
+                serverSelectionTimeoutMS: 5000,
             });
+            console.log("MongoDB Connected (Atlas):", cached.conn.connection.host);
+            return cached.conn;
+        } catch (err) {
+            console.error("MongoDB Atlas connection failed:", err.message);
+            console.log("Falling back to in-memory MongoDB...");
+        }
+    } else {
+        console.log("No MONGO_URI set. Starting in-memory MongoDB...");
     }
 
-    try {
-        cached.conn = await cached.promise;
-    } catch (error) {
-        // Reset so the next request can retry instead of being stuck.
-        cached.promise = null;
-        console.error("MongoDB Error:", error.message);
-        throw error;
-    }
-
-    return cached.conn;
+    // Fallback: in-memory MongoDB
+    return startInMemoryMongo();
 };
+
+async function startInMemoryMongo() {
+    if (!mongod) {
+        mongod = await MongoMemoryServer.create();
+        const localUri = mongod.getUri();
+        console.log("In-memory MongoDB started at:", localUri);
+    }
+
+    cached.conn = await mongoose.connect(mongod.getUri());
+    console.log("MongoDB Connected (In-Memory):", cached.conn.connection.host);
+    return cached.conn;
+}
 
 export default connectDB;

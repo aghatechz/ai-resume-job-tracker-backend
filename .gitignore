@@ -2,4 +2,8 @@ node_modules
 .env
 package-lock.json
 dist/
-.DS_Store
+.DS_Storenul
+server.log
+uploads/avatars/
+uploads/covers/
+node_modules/

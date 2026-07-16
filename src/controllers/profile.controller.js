@@ -23,7 +23,7 @@ const user = await User.findById(userId).select('-password');
       website: user.website || '',
       linkedin: user.linkedin || '',
       github: user.github || '',
-      avatar: user.avatar || user.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=7f265b&color=fff&size=150`,
+      avatar: user.avatar || user.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0d6efd&color=fff&size=150`,
       coverPhoto: user.coverPhoto || 'https://images.unsplash.com/photo-1557683316-973673baf926?w=1200&h=300&fit=crop',
       skills: user.skills || ['JavaScript', 'React', 'Node.js', 'Python', 'MongoDB'],
       experience: user.experience || [

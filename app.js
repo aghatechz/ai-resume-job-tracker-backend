@@ -14,10 +14,10 @@ import { OAuth2Client } from "google-auth-library";
 import User from "./src/models/User.js";
 import generateToken from "./src/utils/generateToken.js";
 import profileRoutes from "./src/routes/profile.routes.js";
-import manageUsersRoutes from "./src/routes/manage-users.routes.js";
-import superAdminDashboardRoutes from "./src/routes/superadmin-dashboard.routes.js";
+// import manageUsersRoutes from "./src/routes/manage-users.routes.js";
+// import superAdminDashboardRoutes from "./src/routes/superadmin-dashboard.routes.js";
 import careerRoutes from "./src/routes/career.routes.js";
-import reportRoutes from "./src/routes/report.routes.js";
+// import reportRoutes from "./src/routes/report.routes.js";
 import path from "path";
 import mongoose from "mongoose";
 
@@ -139,10 +139,10 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/resume", resumeRoutes );
 app.use("/api/jobs", jobRoutes);
 app.use('/api/profile', profileRoutes); 
-app.use("/api/manage-users", manageUsersRoutes);
-app.use("/api/superadmin-dashboard", superAdminDashboardRoutes);
+// app.use("/api/manage-users", manageUsersRoutes);
+// app.use("/api/superadmin-dashboard", superAdminDashboardRoutes);
 app.use("/api/career", careerRoutes);
-app.use("/api/reports", reportRoutes);
+// app.use("/api/reports", reportRoutes);
 
 app.post("/api/ai", async (req, res) => {
   const { prompt } = req.body;
